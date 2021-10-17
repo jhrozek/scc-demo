@@ -1,0 +1,50 @@
+---
+apiVersion: security-profiles-operator.x-k8s.io/v1alpha1
+kind: SeccompProfile
+metadata:
+  name: seccomp-demo
+  namespace: scc-demo
+  annotations:
+    description: |-
+      Allows only the necessary syscalls for the errorlogger pod to run
+spec:
+  defaultAction: SCMP_ACT_ERRNO
+  targetWorkload: "demo"
+  baseProfileName: runc-v1.0.0-rc92
+  architectures:
+    - SCMP_ARCH_X86_64
+  syscalls:
+    - action: SCMP_ACT_ALLOW
+      names:
+        - arch_prctl
+        - capset
+        - clone
+        - close
+        - epoll_create1
+        - epoll_ctl
+        - epoll_pwait
+        - execve
+        - exit_group
+        - fcntl
+        - futex
+        - getpid
+        - gettid
+        - mmap
+        - nanosleep
+        - openat
+        - pipe2
+        - prctl
+        - read
+        - readlinkat
+        - rt_sigaction
+        - rt_sigprocmask
+        - rt_sigreturn
+        - sched_getaffinity
+        - sched_yield
+        - select
+        - setresgid
+        - setresuid
+        - sigaltstack
+        - tgkill
+        - uname
+        - write

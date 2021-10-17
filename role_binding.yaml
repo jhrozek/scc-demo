@@ -1,0 +1,14 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  labels:
+    app: scc-demo
+  name: scc-demo
+  namespace: scc-demo
+subjects:
+- kind: ServiceAccount
+  name: demosa
+roleRef:
+  kind: Role
+  name: scc-demo
+  apiGroup: rbac.authorization.k8s.io

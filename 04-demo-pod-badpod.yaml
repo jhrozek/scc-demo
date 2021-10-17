@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demo-bad-pod
+  namespace: scc-demo
+spec:
+  serviceAccountName: demosa
+  containers:
+    - image: image-registry.openshift-image-registry.svc:5000/scc-demo/demo
+      name: demo
+      args:
+        - /log/demologs.log
+      volumeMounts:
+        - name: logs
+          mountPath: /log/
+      securityContext:
+        seLinuxOptions:
+          # NOTE: This uses an appropriate SELinux type
+          type: errorlogger_scc-demo.process
+  restartPolicy: Never
+  volumes:
+    - name: logs
+      hostPath:
+        # NOTE: This writes to the audit logs!
+        # this was probably not intended by the application
+        # developers.
+        path: /var/log/audit/
+        type: Directory
