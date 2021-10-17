@@ -21,7 +21,7 @@ the SELinux team, with minor changes.
 ## Demo setup
 
 * Install the SPO from its repo with 'make deploy-openshift-dev'
-* Enable SELinux with 'oc patch spod/spod -p '{"spec":{"enableLogEnricher": true, "enableSelinux":true}}' --type=merge'
+* Enable SELinux with: `oc patch spod/spod -p '{"spec":{"enableLogEnricher": true, "enableSelinux":true}}' --type=merge`
 
 * From this repo, run the `make setup` target. This will set up an
   appropriate namespace and the needed security profile as well as
@@ -40,8 +40,7 @@ use!
 
 ### 01-demo-pod-defaults-too-strict.yaml:
 
-doesn't work SELinux blocks access to files
-  labeled with var_log_t from a container labeled with container_t
+Create the workload with:
 
 ```
 oc apply -f 01-demo-pod-defaults-too-strict.yaml
@@ -63,9 +62,9 @@ this, as it would give too much access to the host itself...
 
 We can also give the SA the permissions to use an SCC that allows us to mount
 a host filesystem. This would still not help completely, because the files
-from the host are labaled as 'var_log_t', but the container is running as
-'container_t'. The easiest, but least secure way is to run the container
-as the 'spc_t' type, effectively an 'unconfined_t' in the container world.
+from the host are labaled as `var_log_t`, but the container is running as
+`container_t`. The easiest, but least secure way is to run the container
+as the `spc_t` type, effectively an `unconfined_t` in the container world.
 
 Moreover, the fact that we had to give the SA permissions to use the privileged
 SCC is not great either as the privileged SCC allows the container to run as any
@@ -73,14 +72,14 @@ UID and use any capabilities.
 
 ### 03-demo-pod-secure.yaml
 
-This pod uses the 'errorlogger_scc-demo.process' SELinux policy that we prepared
-for this demo. It only allows access to files and directories labeled 'var_log_t'.
+This pod uses the `errorlogger_scc-demo.process` SELinux policy that we prepared
+for this demo. It only allows access to files and directories labeled `var_log_t`.
 So this is reasonably secure and could be paired with a seccomp policy to make
 sure that the workload is only allowed to call certain syscalls.
 
 We finally come to the problem I wanted to point out during the demo. In order to
 use the custom SELinux policy, we had to allow the SA to use the privileged SCC,
-as all the other SCCs use the MustRunAs strategey for SELinux.
+as all the other SCCs use the `MustRunAs` strategey for SELinux.
 
 * 04-demo-pod-badpod.yaml: negative test of SELinux: don't allow audit_t files
 
@@ -96,7 +95,7 @@ Let's look at both SELinux and seccomp separately:
     - seccomp: Not handled with SCCs at all, anything goes if the admin has the privilege
       to set a seccomp context
 
-Setting RunAsAny is also, by default, only allowed with the privileged or node-exporter
+Setting `RunAsAny` is also, by default, only allowed with the privileged or node-exporter
 SCCs which open up many other options such as all capabilities, running containers in
 privileged mode and so on. At the same time, there is no (AFAICT?) way to limit the use
 of SAs in the namespace, so once someone has the privileges to run pods in a namespace
@@ -119,28 +118,28 @@ full privileged SCC rights.
 Note that the following is just a proposal. We don't claim in any way to be experts
 in SCCs or the API server at all.
 
-A new MustRunAsRange strategy for SELinux could be added. This strategy would only
+A new `MustRunAsRange` strategy for SELinux could be added. This strategy would only
 allow using SELinux contexts that are listed as annotations in the namespace where
-the workload is running, similar to how the MustRunAsRange strategy works for UIDs
+the workload is running, similar to how the `MustRunAsRange` strategy works for UIDs
 or supplemental GIDs. A mechanism would have to be implemented to allow updating
 the annotations by a trusted workload such as the SPO (although this is not tied
 to the SPO per se).
 
-Using this MustRunAsRange strategy, a new default SCC (let's call it 'restricted')
-could be added that acts as the anyuid SCC, but allows the MustRunAsRange SELinux
+Using this MustRunAsRange strategy, a new default SCC (let's call it `restricted`)
+could be added that acts as the `anyuid` SCC, but allows the `MustRunAsRange` SELinux
 strategy. Other SCCs could be added by the administrator depending on the needs,
 e.g. depending on what volumes must be used or what UIDs must be used.
 
 ## Contingency plan
 
 As a contingency plan, we could instruct the SPO users (or really, anyone wishing
-to use their own SCCs) to create a new SCC that would use the 'RunAsAny' strategy
+to use their own SCCs) to create a new SCC that would use the `RunAsAny` strategy
 for SELinux. This does not solve the issue of restricting workloads in a namespace
 to a subset of the existing policies, but instead still allows any. No engineering
 work is needed, though.
 
 ## Links
-https://github.com/openshift/enhancements/pull/745 - SPO OpenShift enhancement
-https://github.com/kubernetes-sigs/security-profiles-operator - SPO github project
+ - https://github.com/openshift/enhancements/pull/745 - SPO OpenShift enhancement
+ - https://github.com/kubernetes-sigs/security-profiles-operator - SPO github project
 
 Find us at `forum-compliance` on the CoreOS Slack.
