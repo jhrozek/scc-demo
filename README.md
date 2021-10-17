@@ -60,6 +60,12 @@ this, as it would give too much access to the host itself...
 
 ### 02-demo-pod-spc_t-too-open.yaml
 
+Create the workload with:
+
+```
+oc apply -f 02-demo-pod-spc_t-too-open.yaml
+```
+
 We can also give the SA the permissions to use an SCC that allows us to mount
 a host filesystem. This would still not help completely, because the files
 from the host are labaled as `var_log_t`, but the container is running as
@@ -72,6 +78,12 @@ UID and use any capabilities.
 
 ### 03-demo-pod-secure.yaml
 
+Create the workload with:
+
+```
+oc apply -f 03-demo-pod-secure.yaml
+```
+
 This pod uses the `errorlogger_scc-demo.process` SELinux policy that we prepared
 for this demo. It only allows access to files and directories labeled `var_log_t`.
 So this is reasonably secure and could be paired with a seccomp policy to make
@@ -81,7 +93,11 @@ We finally come to the problem I wanted to point out during the demo. In order t
 use the custom SELinux policy, we had to allow the SA to use the privileged SCC,
 as all the other SCCs use the `MustRunAs` strategey for SELinux.
 
-* 04-demo-pod-badpod.yaml: negative test of SELinux: don't allow audit_t files
+### 04-demo-pod-badpod.yaml
+
+This is just a negative test of SELinux: the workload tries to mount and write
+to files labelled as `audit_t` which is not allowed and the workload fails. Just
+for illustration purposes that the policy really does contraints the workload.
 
 ## Problem statement
 
@@ -125,10 +141,18 @@ or supplemental GIDs. A mechanism would have to be implemented to allow updating
 the annotations by a trusted workload such as the SPO (although this is not tied
 to the SPO per se).
 
-Using this MustRunAsRange strategy, a new default SCC (let's call it `restricted`)
+Using this `MustRunAsRange` strategy, a new default SCC (let's call it `measured`)
 could be added that acts as the `anyuid` SCC, but allows the `MustRunAsRange` SELinux
 strategy. Other SCCs could be added by the administrator depending on the needs,
 e.g. depending on what volumes must be used or what UIDs must be used.
+
+The situation with seccomp profiles is a little different because there is no
+seccomp strategy, but rather a list of allowed seccomp profiles, where all but
+the privileged SCCs allow none and the privileged SCC allows all. We could
+perhaps add a new field (`seccompSelection`) that would control if this
+field is taken into account and would default to true for backwards compatibility
+and if set to false, the namespace annotations would be used, as with the SELinux
+`MustRunAsRange` strategy.
 
 ## Contingency plan
 
