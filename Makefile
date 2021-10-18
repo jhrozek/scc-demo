@@ -40,6 +40,7 @@ idp: ns
 	@echo "Creating htpasswd IDP"
 	@oc create secret generic htpass-secret --from-file=htpasswd=./users.htpasswd -n openshift-config
 	@oc apply -f htpasswd-idp.yaml
+	@rm -f users.htpasswd
 	@echo "Allowing user1 into the project"
 	@oc project scc-demo
 	@oc adm policy add-role-to-user edit user1

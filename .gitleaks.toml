@@ -1,0 +1,5 @@
+[allowlist]
+  description = "Ignores htpasswd because this is just a demo repo"
+  files = [
+    '''\.users\.htpasswd$''',
+  ]
