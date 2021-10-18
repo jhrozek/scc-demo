@@ -15,7 +15,7 @@ spec:
           mountPath: /log/
       securityContext:
         seLinuxOptions:
-          # NOTE: This uses an appropriate SELinux type
+          # NOTE: This uses an "unconfined" SELinux type
           type: spc_t
   restartPolicy: Never
   volumes:
